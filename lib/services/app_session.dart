@@ -10,7 +10,7 @@ class AppSession {
   static final ApiService apiService = ApiService(
     baseUrl: const String.fromEnvironment(
       'API_BASE_URL',
-      defaultValue: 'https://preliterate-shandi-celebratory.ngrok-free.dev',
+      defaultValue: 'https://lifetrace-backend-og.onrender.com',
     ),
   );
   static final FastApiAuthService authService = FastApiAuthService(api: apiService);
