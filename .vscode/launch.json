@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "LifeTrace (ngrok)",
+            "request": "launch",
+            "type": "dart",
+            "toolArgs": [
+                "--dart-define=API_BASE_URL=https://preliterate-shandi-celebratory.ngrok-free.dev"
+            ]
+        },
+        {
+            "name": "LifeTrace (Local Android Emulator)",
+            "request": "launch",
+            "type": "dart",
+            "toolArgs": [
+                "--dart-define=API_BASE_URL=http://10.0.2.2:8000"
+            ]
+        }
+    ]
+}

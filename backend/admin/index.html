@@ -1,0 +1,46 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LifeTrace Admin</title>
+  <link rel="stylesheet" href="/dashboard/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section id="login-view" class="panel login-panel">
+      <p class="eyebrow">LifeTrace operations</p>
+      <h1>Administrator sign in</h1>
+      <form id="login-form">
+        <label>Email<input id="email" type="email" required autocomplete="username"></label>
+        <label>Password<input id="password" type="password" required autocomplete="current-password"></label>
+        <button type="submit">Sign in</button>
+        <p id="login-error" class="error" role="alert"></p>
+      </form>
+    </section>
+
+    <section id="dashboard-view" hidden>
+      <header class="topbar">
+        <div><p class="eyebrow">LifeTrace operations</p><h1>Response desk</h1></div>
+        <button id="logout-button" class="secondary">Sign out</button>
+      </header>
+      <p id="dashboard-error" class="error" role="alert"></p>
+      <div id="summary" class="metrics"></div>
+      <section class="panel">
+        <div class="section-heading"><div><p class="eyebrow">Incoming reports</p><h2>Disaster responses</h2></div><button id="refresh-button" class="secondary">Refresh</button></div>
+        <form id="filters" class="filters">
+          <label>Type<select id="type-filter"><option value="">All types</option><option value="NEED_HELP">Need help</option><option value="SAFE">Safe</option></select></label>
+          <label>Status<select id="status-filter"><option value="">All statuses</option><option value="PENDING">Pending</option><option value="ASSIGNED">Assigned</option><option value="RESOLVED">Resolved</option></select></label>
+          <label>Date<input id="date-filter" type="date"></label>
+          <button type="submit">Apply filters</button>
+        </form>
+        <div class="table-wrap"><table><thead><tr><th>Priority</th><th>Citizen</th><th>Response</th><th>Location</th><th>Submitted</th><th>Status</th><th>Action</th></tr></thead><tbody id="response-rows"></tbody></table></div>
+        <div class="pagination"><button id="previous-page" class="secondary">Previous</button><span id="page-label"></span><button id="next-page" class="secondary">Next</button></div>
+      </section>
+    </section>
+  </main>
+  <dialog id="details-dialog"><article><button id="close-dialog" class="dialog-close" aria-label="Close">&times;</button><h2>Response details</h2><div id="details-content"></div></article></dialog>
+  <script src="/dashboard/dashboard.js"></script>
+</body>
+</html>
+
