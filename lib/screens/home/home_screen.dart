@@ -93,6 +93,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 22),
+              const _MeshNetworkSection(),
+              const SizedBox(height: 22),
               _LatestResponseSection(response: latestResponse),
               const SizedBox(height: 14),
               SizedBox(
@@ -261,3 +263,170 @@ class _InfoRow extends StatelessWidget {
     );
   }
 }
+
+class _MeshNetworkSection extends StatelessWidget {
+  const _MeshNetworkSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: AppSession.meshService,
+      builder: (context, _) {
+        final mesh = AppSession.meshService;
+        final outbox = AppSession.outboxService;
+        final hasPending = outbox.hasPendingItems;
+
+        return Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: hasPending ? Colors.orange.shade300 : const Color(0xFFD7E1DF),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.wifi_tethering,
+                          color: hasPending ? Colors.orange : const Color(0xFF176E65),
+                          size: 24,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'P2P Mesh Network',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: mesh.isBroadcasting
+                            ? Colors.green.shade50
+                            : const Color(0xFFEDF2F1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.circle,
+                            size: 8,
+                            color: mesh.isBroadcasting ? Colors.green : Colors.grey,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            mesh.isBroadcasting ? 'Broadcasting' : 'Duty Cycling',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: mesh.isBroadcasting
+                                  ? Colors.green.shade800
+                                  : Colors.grey.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  mesh.statusMessage,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: hasPending ? Colors.orange.shade50 : const Color(0xFFF4F8F7),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Column(
+                        children: [
+                          Text(
+                            '${mesh.activePeersCount}',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF143B39),
+                            ),
+                          ),
+                          const Text('Peers in Range', style: TextStyle(fontSize: 11)),
+                        ],
+                      ),
+                      Container(height: 24, width: 1, color: Colors.grey.shade300),
+                      Column(
+                        children: [
+                          Text(
+                            '${outbox.pendingCount}',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: hasPending
+                                  ? Colors.orange.shade800
+                                  : const Color(0xFF143B39),
+                            ),
+                          ),
+                          const Text('Queued Alerts', style: TextStyle(fontSize: 11)),
+                        ],
+                      ),
+                      Container(height: 24, width: 1, color: Colors.grey.shade300),
+                      const Column(
+                        children: [
+                          Icon(Icons.battery_charging_full, size: 20, color: Colors.green),
+                          Text('Eco Protocol', style: TextStyle(fontSize: 11)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.tonalIcon(
+                    onPressed: mesh.isSyncingGateway
+                        ? null
+                        : () async {
+                            await mesh.triggerEmergencyBurst();
+                            await mesh.trySyncGateway();
+                          },
+                    icon: mesh.isSyncingGateway
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.sync, size: 20),
+                    label: Text(
+                      mesh.isSyncingGateway
+                          ? 'Uplinking Alerts...'
+                          : (hasPending ? 'Broadcast & Uplink Now' : 'Scan for Nearby Peers'),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+

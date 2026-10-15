@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app.dart';
 import '../../models/disaster_alert.dart';
 import '../../models/disaster_response.dart';
+import '../../models/mesh_packet.dart';
 import '../../services/app_session.dart';
 
 class DisasterAlertScreen extends StatefulWidget {
@@ -51,6 +52,21 @@ class _DisasterAlertScreenState extends State<DisasterAlertScreen> {
       timestamp: DateTime.now(),
     );
 
+    final meshPacket = MeshPacket(
+      packetId: 'pkt_${DateTime.now().millisecondsSinceEpoch}_${AppSession.currentUser!.id.substring(0, 6)}',
+      userId: AppSession.currentUser!.id,
+      citizenName: AppSession.currentUser!.fullName,
+      citizenPhone: AppSession.currentUser!.phoneNumber,
+      emergencyContactName: AppSession.currentUser!.emergencyContactName,
+      emergencyContactPhone: AppSession.currentUser!.emergencyContactPhone,
+      bloodGroup: AppSession.currentUser!.bloodGroup,
+      disasterId: response.disasterId,
+      responseType: status == SafetyStatus.safe ? 'SAFE' : 'NEED_HELP',
+      latitude: response.latitude,
+      longitude: response.longitude,
+      submittedAt: response.timestamp,
+    );
+
     try {
       await AppSession.apiService.post('/responses', {
         'disaster_id': AppSession.activeAlert?.id,
@@ -59,16 +75,29 @@ class _DisasterAlertScreenState extends State<DisasterAlertScreen> {
         'longitude': response.longitude,
       });
       await AppSession.responseService.saveResponse(response);
-    } catch (error) {
-      if (!mounted) return;
-      setState(() {
-        _isSubmitting = false;
-        _locationError = error.toString().replaceFirst('Exception: ', '');
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_locationError!)),
-      );
-      return;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Status transmitted to emergency command.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (_) {
+      // Offline fallback: Queue in mesh outbox and start P2P broadcast
+      await AppSession.outboxService.saveOwnPacket(meshPacket);
+      await AppSession.responseService.saveResponse(response);
+      AppSession.meshService.triggerEmergencyBurst();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No Internet: Alert queued in LifeTrace Mesh & broadcasting to nearby devices!'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
     }
     if (!mounted) return;
     AppSession.currentStatus = status;

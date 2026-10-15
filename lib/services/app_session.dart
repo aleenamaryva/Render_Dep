@@ -4,6 +4,8 @@ import '../models/user.dart';
 import 'auth_service.dart';
 import 'api_service.dart';
 import 'location_service.dart';
+import 'mesh_service.dart';
+import 'offline_outbox_service.dart';
 import 'response_service.dart';
 
 class AppSession {
@@ -16,6 +18,11 @@ class AppSession {
   static final FastApiAuthService authService = FastApiAuthService(api: apiService);
   static final DeviceLocationService locationService = DeviceLocationService();
   static final LocalResponseService responseService = LocalResponseService();
+  static final OfflineOutboxService outboxService = OfflineOutboxService();
+  static final MeshService meshService = MeshService(
+    outbox: outboxService,
+    api: apiService,
+  );
 
   static User? currentUser;
   static DisasterAlert? activeAlert = DisasterAlert.sample();
