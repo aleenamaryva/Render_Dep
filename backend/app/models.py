@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import uuid4
 
-from sqlalchemy import DateTime, ForeignKey, String, Text, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
@@ -48,6 +48,10 @@ class DisasterResponse(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
     status_updated_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    packet_id: Mapped[str | None] = mapped_column(String(64), unique=True, index=True, nullable=True)
+    is_mesh_relayed: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0", nullable=False)
+    hop_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
+    relayed_by_user_id: Mapped[str | None] = mapped_column(ForeignKey("users.id"), nullable=True)
 
     user: Mapped[User] = relationship(
         back_populates="responses",

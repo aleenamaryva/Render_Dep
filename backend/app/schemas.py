@@ -74,6 +74,37 @@ class DisasterResponseResponse(BaseModel):
     submitted_at: datetime
     status_updated_at: datetime | None = None
     status_updated_by: str | None = None
+    packet_id: str | None = None
+    is_mesh_relayed: bool = False
+    hop_count: int = 0
+    relayed_by_user_id: str | None = None
+
+
+class MeshPacketIn(BaseModel):
+    packet_id: str
+    user_id: str
+    citizen_name: str | None = None
+    citizen_phone: str | None = None
+    emergency_contact_name: str | None = None
+    emergency_contact_phone: str | None = None
+    blood_group: str | None = None
+    disaster_id: str | None = None
+    response_type: Literal["SAFE", "NEED_HELP"]
+    latitude: float = Field(ge=-90, le=90)
+    longitude: float = Field(ge=-180, le=180)
+    submitted_at: datetime | None = None
+    hop_count: int = 0
+    relayed_by: list[str] = []
+
+
+class MeshRelayBatchRequest(BaseModel):
+    packets: list[MeshPacketIn]
+
+
+class MeshRelayBatchResponse(BaseModel):
+    accepted_count: int
+    ignored_count: int
+    accepted_ids: list[str]
 
 
 class ResponseStatusUpdate(BaseModel):
@@ -92,3 +123,4 @@ class DashboardSummary(BaseModel):
     safe_responses: int
     help_requests: int
     pending_responses: int
+
